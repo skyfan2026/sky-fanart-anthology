@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyArtFest2026 Anthology</title>
+
+  <style>
+    /* =========================================
+       1. 基本レイアウト・リセット
+       ========================================= */
+    body {
+      margin: 0;
+      font-family: "Helvetica", "Arial", sans-serif;
+      color: white;
+      background: linear-gradient(180deg, #061a33, #1b3f6e, #0a2a4a);
+      transition: background 1s ease;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* =========================================
+       2. 背景演出・エフェクト
+       ========================================= */
+    .star {
+      position: fixed;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+
+    .glow {
+      position: fixed;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .bgBottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.95;
+    }
+
+    /* =========================================
+       3. ナビゲーション（ハンバーガー & オーバーレイ）
+       ========================================= */
+    /* 背景タップで閉じるためのレイヤー */
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3); /* メイン部分を少し暗くする */
+      z-index: 997;
+      display: none; /* 初期状態は非表示 */
+    }
+
+    .menuBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 30px;
+      height: 22px;
+      cursor: pointer;
+      z-index: 999;
+    }
+
+    .menuBtn span {
+      display: block;
+      height: 3px;
+      background: white;
+      margin: 5px 0;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* メニューが開いている時のボタンの色 */
+    .menuBtn.active span {
+      background: #1b3f6e;
+    }
+
+    .menu {
+      position: fixed;
+      top: 0;
+      right: -260px;
+      width: 260px;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95); /* 背景を白に */
+      backdrop-filter: blur(10px);
+      padding-top: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      transition: 0.4s;
+      z-index: 998;
+      box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    }
+
+    .menu.open {
+      right: 0;
+    }
+
+    .menu a {
+      color: #1b3f6e; /* 文字を濃い青に */
+      text-decoration: none;
+      padding: 10px 30px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .menu a:hover {
+      background: rgba(27, 63, 110, 0.1);
+    }
+
+    /* =========================================
+       4. ヘッダー・共通UIパーツ
+       ========================================= */
+    header {
+      text-align: center;
+      padding: 120px 20px 40px;
+    }
+
+ .title {
+  /* 最小24px、画面幅の8%分、最大52pxの間で柔軟に変化 */
+  font-size: clamp(24px, 8vw, 52px); 
+  font-weight: bold;
+  letter-spacing: 3px;
+  line-height: 1.3;
+  padding: 0 20px;
+  margin: 0 auto;
+  word-break: keep-all; /* 単語の途中で改行させない */
+  overflow-wrap: break-word;
+}
+
+    .lang button {
+      margin: 5px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cta {
+      margin-top: 25px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cta a {
+      display: inline-block;
+      padding: 16px 34px;
+      background: white;
+      color: #1b3f6e;
+      font-weight: bold;
+      border-radius: 40px;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .subLink {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      letter-spacing: 1px;
+      transition: 0.3s;
+    }
+
+    .subLink:hover {
+      color: white;
+      text-decoration: underline;
+    }
+
+    /* =========================================
+       5. セクション・コンテンツ
+       ========================================= */
+    section {
+      max-width: 900px;
+      margin: auto;
+      padding: 40px 20px;
+    }
+
+    h2 {
+      border-left: 4px solid rgba(255,255,255,0.7);
+      padding-left: 10px;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.08);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      margin-bottom: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 50px;
+      opacity: 0.6;
+      font-size: 12px;
+    }
+
+    /* =========================================
+       6. アニメーション
+       ========================================= */
+    .cta::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 170px;
+      height: 170px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+      animation: pulse 3s infinite;
+      z-index: -1;
+    }
+
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(0.8); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+      100% { transform: translate(-50%, -50%) scale(0.8); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="overlay" onclick="closeMenu()"></div>
+
+  <div class="glow" id="glow"></div>
+  
+  <img src="bg-bottom.png" class="bgBottom">
+
+  <div class="menuBtn" onclick="toggleMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+<nav class="menu" id="menu">
+  <a href="#t1" id="m1" onclick="closeMenu()">イベント概要</a>
+  <a href="#t2" id="m2" onclick="closeMenu()">企画概要</a>
+  <a href="#t3" id="m3" onclick="closeMenu()">募集要項</a>
+  <a href="#t4" id="m4" onclick="closeMenu()">原稿仕様</a>
+  <a href="#t5" id="m5" onclick="closeMenu()">禁止事項</a>
+</nav>
+
+<header>
+<div class="title">
+  <span id="title1" style="display: inline-block;">Skyファンアートアンソロジー</span>
+  <span id="title2" style="display: inline-block;">SkyArtFest 2026</span>
+</div>
+
+  <div class="lang">
+    <button onclick="setLang('ja')">JP</button>
+    <button onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+  <div class="cta">
+    <a href="https://forms.gle/GE9DhWVCDHvi2FKF8" id="applyBtn" target="_blank">
+      応募フォームへ
+    </a>
+  </div>
+
+  <section>
+    <h2 id="t1">頒布イベント概要</h2>
+    <div class="box" id="b1">
+      ・イベント名：Sky ArtFest 2026<br><br>
+      ・開催場所：TODA HALL & CONFERENCE TOKYO ホールA＆B <br>
+      <span style="display:inline-block; margin-left:6em;">
+      〒104-0031 東京都中央区京橋一丁目7番1号 TODA BUILDING 4階</span><br><br>
+      ・開催日程：2026年8月15日(土)・16日(日)<br><br>
+      ・開催時間：11:00~19:00 <br><br>
+      ・実施内容：出展サークルによるSkyファンアート作品の頒布や展示、<br>
+      <span style="display:inline-block; margin-left:6em;">
+      および会場内ステージでのパフォーマンス </span><br><br>
+      ・主催：thatgamecompany<br><br>
+      ・公式ホームページ：
+      <a href="https://www.thatskygame.com/ja/news/sky-artfest-2026-application/" target="_blank" style="color:#fff; text-decoration:underline;">
+        公式サイトはこちら
+      </a>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="t2">企画概要</h2>
+    <div class="box" id="b2">
+      ・本企画は『Sky星を紡ぐ子どもたち』のファンアート作品を対象とした非公式のファン企画です。<br>
+      ・イラスト、立体作品、コスプレ写真などを一冊にし紙媒体で制作、SkyArtFest2026にて一日頒布を行います。<br>
+      ・テーマ：お祭り・アート<br>
+      ※必ずしもテーマに沿う必要はありません。公開・未公開作品問いません。
+    </div>
+  </section>
+
+  <section>
+    <h2 id="t3">募集要項・注意事項</h2>
+    <div class="box" id="b3">
+      ・募集形式：事前応募 <br>
+      ・参加費：無料 <br>
+      ・参加人数：未定 <br>
+      ※応募状況によっては、抽選または早期締切となる場合があります。<br>
+      ・18歳以上（高校生不可）の参加とさせていただきます。<br>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="t4">原稿仕様</h2>
+    <div class="box" id="b4">
+      <div style="margin-top:18px; text-align:center;">
+        <a href="layout.html" class="subLink">
+          原稿レイアウト・仕様の詳細はこちら
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="t5">禁止事項</h2>
+    <div class="box" id="b5">
+      1. 作品内容に関する禁止<br><br>
+      ・公式・原作への過度な誹謗中傷<br>
+      ・公序良俗に反する内容（差別・ヘイト表現など）<br>
+      ・他作品・他参加者への攻撃的表現<br>
+      ・盗用・トレス・AI生成物・無断転載<br>
+      ・R18作品（性的表現・過度な暴力表現・グロテスク表現を含むもの）<br><br>
+      2. 権利侵害<br><br>
+      ・他社IPが含まれる内容(クロスオーバー表現を含む)<br>
+      ・他人の著作物の無断使用（素材・画像・フォントなど）<br>
+      ・商用利用不可素材の使用<br><br>
+      3. 形式違反<br><br>
+      ・指定外のサイズ・解像度・フォーマットでの提出<br>
+      ※指定に沿わない場合は再提出をお願いすることがあります。期限内であれば再提出可能ですが、締切までに再提出が間に合わない場合は参加できません。<br>
+      ・連絡なしでの締切遅延（無断遅延）<br><br>
+      4. その他運営がNGとするもの<br><br>
+      ・政治・宗教など強い主張を含むもの<br>
+      ・以下の公式ホームページもご確認ください<br>
+      Sky ArtFest 2026 出展者特設ページ：
+      <a href="https://industrious-shroud-31c.notion.site/Sky-ArtFest-2026-325fa774413980578b6ac72808c1e2a6?pvs=25" target="_blank" style="color:#fff; text-decoration:underline;">『Sky ArtFest 2026』コンテンツガイドライン</a><br>
+      thatgamecompanyサポート：
+      <a href="https://thatgamecompany.helpshift.com/hc/ja/17-sky-children-of-the-light/section/123-legal-code-of-conduct/?l=ja" target="_blank" style="color:#fff; text-decoration:underline;">ガイドライン/行動規範</a>
+    </div>
+  </section>
+
+  <footer>
+    SkyArtFest 2026 Anthology Project
+  </footer>
+
+<script>
+/* =========================================
+   1. 言語データ
+========================================= */
+const i18n = {
+  en: {
+    title1: "Sky Fan Art Anthology",
+    title2: "Sky ArtFest 2026",
+
+    t1: "Event Overview",
+    t2: "Project Overview",
+    t3: "Participation Requirements",
+    t4: "Submission Specifications",
+    t5: "Rules & Restrictions",
+
+    m1: "Event Overview",
+    m2: "Project Overview",
+    m3: "Requirements",
+    m4: "Specs",
+    m5: "Rules",
+
+    b1: `
+Event Name: Sky ArtFest 2026<br><br>
+Venue: TODA HALL & CONFERENCE TOKYO (Hall A & B)<br>
+4F TODA BUILDING, 1-7-1 Kyobashi, Chuo-ku, Tokyo, Japan<br><br>
+Date: August 15 (Sat) – 16 (Sun), 2026<br><br>
+Time: 11:00 – 19:00<br><br>
+Content: Distribution and exhibition of Sky fan artworks by participating creators, as well as stage performances held within the venue.<br><br>
+Organizer: thatgamecompany
+`,
+
+    b2: `
+This is an unofficial fan-organized anthology project featuring artwork inspired by "Sky: Children of the Light".<br>
+Illustrations, 3D works, and cosplay photography will be compiled into a printed book and distributed at Sky ArtFest 2026.<br><br>
+Theme: Festival / Art<br>
+*Submissions are not required to strictly follow the theme. Both published and unpublished works are welcome.*
+`,
+
+    b3: `
+Application: Required in advance<br>
+Participation Fee: Free<br>
+Number of Participants: Undetermined<br><br>
+*Depending on the number of applications, participants may be selected by lottery or applications may close early.*<br>
+Participants must be 18 years or older (high school students are not eligible).
+`,
+
+    b4: `
+Please check the detailed submission guidelines from the link below.<br>
+All works must follow the specified format, resolution, and file requirements.
+`,
+
+    b5: `
+1. Content Restrictions<br><br>
+- Excessive criticism or defamation of the original work or official creators<br>
+- Content that violates public order and morals (hate speech, discrimination, etc.)<br>
+- Attacks toward other works or participants<br>
+- Plagiarism, tracing, AI-generated works, or unauthorized reproduction<br>
+- R18 content (sexual, excessively violent, or grotesque expressions)<br><br>
+
+2. Intellectual Property Violations<br><br>
+- Inclusion of other IPs (including crossover content)<br>
+- Unauthorized use of copyrighted materials (images, assets, fonts, etc.)<br>
+- Use of materials that prohibit commercial usage<br><br>
+
+3. Format Violations<br><br>
+- Submissions that do not meet specified size, resolution, or format requirements<br>
+- Late submissions without prior notice<br><br>
+
+4. Other Restrictions<br><br>
+- Strong political or religious statements<br>
+- Please also review the official guidelines linked below
+`,
+
+    applyBtn: "Apply Now"
+  }
+};
+
+/* =========================================
+   2. 初期日本語保存
+========================================= */
+const originalContent = {};
+
+window.addEventListener("DOMContentLoaded", () => {
+ const ids = [
+  "title1","title2",   // ← 追加
+  "t1","t2","t3","t4","t5",
+  "b1","b2","b3","b4","b5",
+  "applyBtn",
+  "m1","m2","m3","m4","m5"
+];
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) originalContent[id] = el.innerHTML;
+  });
+
+  // 保存された言語を適用
+  const savedLang = localStorage.getItem("lang") || "ja";
+  setLang(savedLang, false);
+});
+
+/* =========================================
+   3. フェードアニメーション
+========================================= */
+function fadeSwitch(callback) {
+  document.body.style.transition = "opacity 0.3s";
+  document.body.style.opacity = 0;
+
+  setTimeout(() => {
+    callback();
+    document.body.style.opacity = 1;
+  }, 300);
+}
+
+/* =========================================
+   4. 言語切替
+========================================= */
+function setLang(lang, animate = true) {
+
+  const switchLang = () => {
+
+    if (lang === "ja") {
+      Object.keys(originalContent).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = originalContent[id];
+      });
+    } else {
+      const data = i18n[lang];
+
+      Object.keys(data).forEach(key => {
+        const el = document.getElementById(key);
+        if (!el) return;
+
+        if (key === "applyBtn") {
+          el.textContent = data[key];
+        } else {
+          el.innerHTML = data[key];
+        }
+      });
+    }
+
+    // 言語保存
+    localStorage.setItem("lang", lang);
+  };
+
+  if (animate) {
+    fadeSwitch(switchLang);
+  } else {
+    switchLang();
+  }
+}
+
+/* =========================================
+   5. 背景演出
+========================================= */
+function createStars() {
+  for (let i = 0; i < 120; i++) {
+    let star = document.createElement("div");
+    star.className = "star";
+    let size = Math.random() * 2;
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+    star.style.left = Math.random() * window.innerWidth + "px";
+    star.style.top = Math.random() * window.innerHeight + "px";
+    star.style.opacity = Math.random();
+    document.body.appendChild(star);
+  }
+}
+createStars();
+
+const glow = document.getElementById("glow");
+document.addEventListener("mousemove", (e) => {
+  glow.style.left = e.clientX - 45 + "px";
+  glow.style.top = e.clientY - 45 + "px";
+});
+
+window.addEventListener("scroll", () => {
+  let max = document.body.scrollHeight - window.innerHeight;
+  let t = window.scrollY / max;
+
+  const night = { r: 6, g: 26, b: 51 };
+  const sunset = { r: 42, g: 63, b: 107 };
+  const dusk = { r: 214, g: 138, b: 92 };
+  const warm = { r: 255, g: 179, b: 107 };
+
+  let r, g, b;
+
+  if (t < 0.33) {
+    let k = t / 0.33;
+    r = night.r + (sunset.r - night.r) * k;
+    g = night.g + (sunset.g - night.g) * k;
+    b = night.b + (sunset.b - night.b) * k;
+  } else if (t < 0.66) {
+    let k = (t - 0.33) / 0.33;
+    r = sunset.r + (dusk.r - sunset.r) * k;
+    g = sunset.g + (dusk.g - sunset.g) * k;
+    b = sunset.b + (dusk.b - sunset.b) * k;
+  } else {
+    let k = (t - 0.66) / 0.34;
+    r = dusk.r + (warm.r - dusk.r) * k;
+    g = dusk.g + (warm.g - dusk.g) * k;
+    b = dusk.b + (warm.b - dusk.b) * k;
+  }
+
+  document.body.style.background =
+    `linear-gradient(180deg,
+      rgb(${r},${g},${b}),
+      rgb(${r*0.8},${g*0.8},${b*0.8}),
+      rgb(${r*0.5},${g*0.5},${b*0.5}))`;
+});
+
+/* =========================================
+   6. メニュー
+========================================= */
+function toggleMenu() {
+  const menu = document.getElementById("menu");
+  const btn = document.querySelector(".menuBtn");
+  const overlay = document.getElementById("overlay");
+
+  menu.classList.toggle("open");
+  btn.classList.toggle("active");
+
+  overlay.style.display = menu.classList.contains("open") ? "block" : "none";
+}
+
+function closeMenu() {
+  const menu = document.getElementById("menu");
+  const btn = document.querySelector(".menuBtn");
+  const overlay = document.getElementById("overlay");
+
+  menu.classList.remove("open");
+  btn.classList.remove("active");
+  overlay.style.display = "none";
+}
+</script>
+
+</body>
+</html>
